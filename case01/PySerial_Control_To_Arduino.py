@@ -1,20 +1,16 @@
 import serial #引用 pySerial 模組
-import random
-import time
 
-COM_PORT = 'COM4' #指定通訊埠名稱
-BUAD_RATES =  9600 #設定傳輸速率(鮑率)
+COM_PORT = "COM4"
+BUAD_RATES =  9600
 ser = None
 
 try:
-    ser = serial.Serial(COM_PORT, BUAD_RATES)  # 初始化通訊埠
+    ser = serial.Serial(COM_PORT, BUAD_RATES)
     while True:
-        #data_row = str(random.randint(0, 99)) + "#" # "#"表示結束字元
-        data_row = str(input("請輸入欲傳送數字: ")) + "#"
+        data_row = str(input("請輸入控制的數值(0 ~ 7): ")) + "#"
         data = data_row.encode()
         ser.write(data)
-        print("Send", data_row, data)
-        time.sleep(0.5)
+        print("Send", data)
 except serial.SerialException:
     print("通訊埠無法建立, 請確認:")
     print("1.通訊埠名稱")
