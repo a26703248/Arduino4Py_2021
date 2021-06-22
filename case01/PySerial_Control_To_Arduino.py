@@ -1,13 +1,14 @@
 import serial #引用 pySerial 模組
 
 COM_PORT = "COM4"
+#COM_PORT = "COM6"
 BUAD_RATES =  9600
 ser = None
 
 try:
     ser = serial.Serial(COM_PORT, BUAD_RATES)
     while True:
-        data_row = str(input("請輸入控制的數值(0 ~ 7): ")) + "#"
+        data_row = str(input("請輸入控制的數值(0 ~ 7): "))
         data = data_row.encode()
         ser.write(data)
         print("Send", data)

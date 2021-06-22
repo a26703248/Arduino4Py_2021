@@ -4,7 +4,6 @@ COM_PORT = 'COM4' #指定通訊埠名稱
 BUAD_RATES =  9600 #設定傳輸速率(鮑率)
 ser = None
 
-
 try:
     ser = serial.Serial(COM_PORT, BUAD_RATES)  # 初始化通訊埠
     while True:
