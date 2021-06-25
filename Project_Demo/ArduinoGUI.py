@@ -9,7 +9,6 @@ import tkinter
 import serial
 import threading
 import Project_Demo.OpenWeather as pd
-from tkinter import font
 from io import BytesIO
 from PIL import Image, ImageTk
 
@@ -19,7 +18,7 @@ BAUD_RATES = 9600  # 設定傳輸速率(鮑率)
 play = True
 
 def sendData(num):
-    data_row = str(num)
+    data_row = str(num) + '#'
     data = data_row.encode()
     ser.write(data)
 
@@ -62,6 +61,13 @@ def getOpenWeatherData():
     owtempValue.set('%.1f C' % (float(temp)-273.25))
     owfeelsLikeValue.set('%.1f C' % (float(feels_like)-273.25))
     owhumidityValue.set('%.1f %%' % float(humidity))
+    string = 'A{:.1f},{:.1f},{:.1f}'.format((float(temp)-273.25), (float(feels_like)-273.25), humidity)
+    sendPyToAdr(string)
+
+def sendPyToAdr(string):
+    data_row = str(string)+ '#'
+    data = data_row.encode()
+    ser.write(data)
 
 if __name__ == '__main__':#主方法
 
@@ -72,11 +78,20 @@ if __name__ == '__main__':#主方法
 
     root = tkinter.Tk()
     root.geometry("600x400")
-    root.title("Arduino GUI")
+    root.title("智能家庭管家")
+
+    buzeeropen = ImageTk.PhotoImage(Image.open('buzzeropen.png'))
+    buzeerclose = ImageTk.PhotoImage(Image.open('buzzerclose.png'))
+    clodoor = ImageTk.PhotoImage(Image.open('closedoor.png'))
+    opdoor = ImageTk.PhotoImage(Image.open('opendoor.png'))
+    clean = ImageTk.PhotoImage(Image.open('clean.png'))
+    redlight = ImageTk.PhotoImage(Image.open('redlight.png'))
+    greenlight = ImageTk.PhotoImage(Image.open('greenlight.png'))
+    yellowlight = ImageTk.PhotoImage(Image.open('yellowlight.png'))
 
     # 網路爬蟲--------------------------------------------------------------
     owmainValue = tkinter.StringVar()
-    owmainValue.set("")
+    owmainValue.set("click")
 
     owiconValue = tkinter.StringVar()
     owiconValue.set("weather")
@@ -103,15 +118,12 @@ if __name__ == '__main__':#主方法
     respText = tkinter.StringVar()
     respText.set("0,0.0,0.0")
 
-    sendButton0 = tkinter.Button(text='0', command =lambda: sendData('0'))
-    sendButton1 = tkinter.Button(text='1', command =lambda: sendData('1'))
-    sendButton2 = tkinter.Button(text='2', command =lambda: sendData('2'))
-    sendButton3 = tkinter.Button(text='3', command =lambda: sendData('3'))
-    sendButton4 = tkinter.Button(text='4', command =lambda: sendData('4'))
-    sendButton5 = tkinter.Button(text='5', command =lambda: sendData('5'))
-    sendButton6 = tkinter.Button(text='6', command =lambda: sendData('6'))
-    sendButton7 = tkinter.Button(text='7', command =lambda: sendData('7'))
-    sendButton8 = tkinter.Button(text='8', command =lambda: sendData('8'))
+    sendButton0 = tkinter.Button(text='16', image=buzeerclose, command=lambda: sendData('16'))
+    sendButton1 = tkinter.Button(text='1', image=redlight, command=lambda: sendData('1'))
+    sendButton2 = tkinter.Button(text='2', image=greenlight, command=lambda: sendData('2'))
+    sendButton3 = tkinter.Button(text='3', image=yellowlight, command=lambda: sendData('3'))
+    sendButton4 = tkinter.Button(text='4', image=opdoor, command=lambda: sendData('4'))
+    sendButton8 = tkinter.Button(text='8', image=clodoor, command=lambda: sendData('8'))
 
     # 網路爬蟲--------------------------------------------------------------
     owmainButton = tkinter.Button(textvariable=owmainValue, command=lambda: getOpenWeatherData())
@@ -127,29 +139,26 @@ if __name__ == '__main__':#主方法
     humiLabel = tkinter.Label(root, textvariable=humiValue, font = 'Arial -32', fg = 'blue')
 
     root.rowconfigure((0,1,2), weight=1) # 列 0, 列 1 同步放大縮小
-    root.columnconfigure((0,1,2,3,4,5,6,7,8), weight=1) # 欄 0, 欄 1, 欄 2 ...同步放大縮小
+    root.columnconfigure((0,1,2,3,4,5), weight=1) # 欄 0, 欄 1, 欄 2 ...同步放大縮小
 
     sendButton0.grid(row=0,   column=0, columnspan=1, sticky='EWNS')
     sendButton1.grid(row=0,   column=1, columnspan=1, sticky='EWNS')
     sendButton2.grid(row=0,   column=2, columnspan=1, sticky='EWNS')
     sendButton3.grid(row=0,   column=3, columnspan=1, sticky='EWNS')
     sendButton4.grid(row=0,   column=4, columnspan=1, sticky='EWNS')
-    sendButton5.grid(row=0,   column=5, columnspan=1, sticky='EWNS')
-    sendButton6.grid(row=0,   column=6, columnspan=1, sticky='EWNS')
-    sendButton7.grid(row=0,   column=7, columnspan=1, sticky='EWNS')
-    sendButton8.grid(row=0,   column=8, columnspan=1, sticky='EWNS')
+    sendButton8.grid(row=0,   column=5, columnspan=1, sticky='EWNS')
 
     # 網路爬蟲--------------------------------------------------------------
-    owmainButton.grid(row=1, column=0, columnspan=2, sticky='EWNS')
-    owiconLabel.grid(row=1, column=2, columnspan=3, sticky='EWNS')
-    owtempLabel.grid(row=1, column=5, columnspan=1, sticky='EWNS')
-    owfeelsLikeLabel.grid(row=1, column=6, columnspan=1, sticky='EWNS')
-    owhumidityLabel.grid(row=1, column=7, columnspan=2, sticky='EWNS')
+    owmainButton.grid(row=1, column=0, columnspan=1, sticky='EWNS')
+    owiconLabel.grid(row=1, column=1, columnspan=2, sticky='EWNS')
+    owtempLabel.grid(row=1, column=3, columnspan=1, sticky='EWNS')
+    owfeelsLikeLabel.grid(row=1, column=4, columnspan=1, sticky='EWNS')
+    owhumidityLabel.grid(row=1, column=5, columnspan=1, sticky='EWNS')
     # ---------------------------------------------------------------------
 
-    cdsLabel.grid(row=2, column=0, columnspan=3, sticky='EWNS')
-    tempLabel.grid(row=2, column=3, columnspan=3, sticky='EWNS')
-    humiLabel.grid(row=2, column=7, columnspan=3, sticky='EWNS')
+    cdsLabel.grid(row=2, column=0, columnspan=2, sticky='EWNS')
+    tempLabel.grid(row=2, column=2, columnspan=2, sticky='EWNS')
+    humiLabel.grid(row=2, column=4, columnspan=2, sticky='EWNS')
     receiveLabel.grid(row=3,  column=0, columnspan=9, sticky='EWNS')
 
     t1 = threading.Thread(target=receiveData)
