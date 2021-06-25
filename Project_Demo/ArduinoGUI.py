@@ -4,14 +4,20 @@
 | 766,20.50,52.00 |
 +-----------------+
 '''
+
 import tkinter
 import serial
 import threading
+import Project_Demo.OpenWeather as pd
 from tkinter import font
+from io import BytesIO
+from PIL import Image, ImageTk
+
 
 COM_PORT = 'COM4'  # 指定通訊埠名稱
 BAUD_RATES = 9600  # 設定傳輸速率(鮑率)
 play = True
+
 def sendData(num):
     data_row = str(num)
     data = data_row.encode()
@@ -39,6 +45,24 @@ def receiveData():
             except Exception as e:
                 print("Serial closed ...")
 
+def getOpenWeatherData():
+    status_code, main, icon, temp, feels_like, humidity = pd.openWeather()
+    owmainValue.set(main)
+    owiconValue.set(icon)
+    #  取得 icon 圖片 bytes 資料
+    raw_data = pd.openWeatherIcon(icon)
+    # 轉成 image 格式
+    im = Image.open(BytesIO(raw_data))
+    #轉乘 TK 的 photo 格式
+    photo = ImageTk.PhotoImage(im)
+    # 配置到目標區(owiconLabel)
+    owiconLabel.config(image=photo)
+    owiconLabel.image = photo
+
+    owtempValue.set('%.1f C' % (float(temp)-273.25))
+    owfeelsLikeValue.set('%.1f C' % (float(feels_like)-273.25))
+    owhumidityValue.set('%.1f %%' % float(humidity))
+
 if __name__ == '__main__':#主方法
 
     try:
@@ -50,14 +74,34 @@ if __name__ == '__main__':#主方法
     root.geometry("600x400")
     root.title("Arduino GUI")
 
-    respText = tkinter.StringVar()
-    respText.set("0,0.0,0.0")
+    # 網路爬蟲--------------------------------------------------------------
+    owmainValue = tkinter.StringVar()
+    owmainValue.set("")
+
+    owiconValue = tkinter.StringVar()
+    owiconValue.set("weather")
+
+    owtempValue = tkinter.StringVar()
+    owtempValue.set("0")
+
+    owfeelsLikeValue = tkinter.StringVar()
+    owfeelsLikeValue.set("0")
+
+    owhumidityValue = tkinter.StringVar()
+    owhumidityValue.set("0")
+    # ---------------------------------------------------------------------
+
     cdsValue = tkinter.StringVar()
     cdsValue.set("0")
+
     tempValue = tkinter.StringVar()
     tempValue.set("0")
+
     humiValue = tkinter.StringVar()
     humiValue.set("0")
+
+    respText = tkinter.StringVar()
+    respText.set("0,0.0,0.0")
 
     sendButton0 = tkinter.Button(text='0', command =lambda: sendData('0'))
     sendButton1 = tkinter.Button(text='1', command =lambda: sendData('1'))
@@ -68,12 +112,21 @@ if __name__ == '__main__':#主方法
     sendButton6 = tkinter.Button(text='6', command =lambda: sendData('6'))
     sendButton7 = tkinter.Button(text='7', command =lambda: sendData('7'))
     sendButton8 = tkinter.Button(text='8', command =lambda: sendData('8'))
+
+    # 網路爬蟲--------------------------------------------------------------
+    owmainButton = tkinter.Button(textvariable=owmainValue, command=lambda: getOpenWeatherData())
+    owiconLabel = tkinter.Label(root, textvariable=owiconValue)
+    owtempLabel = tkinter.Label(root, textvariable=owtempValue, font = 'Arial -26', fg = 'green')
+    owfeelsLikeLabel = tkinter.Label(root, textvariable=owfeelsLikeValue, font = 'Arial -26', fg = 'green')
+    owhumidityLabel = tkinter.Label(root, textvariable=owhumidityValue, font = 'Arial -32', fg = 'blue')
+    # ---------------------------------------------------------------------
+
     receiveLabel = tkinter.Label(root, textvariable=respText)
     cdsLabel = tkinter.Label(root, textvariable=cdsValue, font = 'Arial -32', fg = 'red')
     tempLabel = tkinter.Label(root, textvariable=tempValue, font = 'Arial -32', fg = 'green')
     humiLabel = tkinter.Label(root, textvariable=humiValue, font = 'Arial -32', fg = 'blue')
 
-    root.rowconfigure((0,1), weight=1) # 列 0, 列 1 同步放大縮小
+    root.rowconfigure((0,1,2), weight=1) # 列 0, 列 1 同步放大縮小
     root.columnconfigure((0,1,2,3,4,5,6,7,8), weight=1) # 欄 0, 欄 1, 欄 2 ...同步放大縮小
 
     sendButton0.grid(row=0,   column=0, columnspan=1, sticky='EWNS')
@@ -85,10 +138,19 @@ if __name__ == '__main__':#主方法
     sendButton6.grid(row=0,   column=6, columnspan=1, sticky='EWNS')
     sendButton7.grid(row=0,   column=7, columnspan=1, sticky='EWNS')
     sendButton8.grid(row=0,   column=8, columnspan=1, sticky='EWNS')
-    cdsLabel.grid(row=1, column=0, columnspan=3, sticky='EWNS')
-    tempLabel.grid(row=1, column=3, columnspan=3, sticky='EWNS')
-    humiLabel.grid(row=1, column=7, columnspan=3, sticky='EWNS')
-    receiveLabel.grid(row=2,  column=0, columnspan=9, sticky='EWNS')
+
+    # 網路爬蟲--------------------------------------------------------------
+    owmainButton.grid(row=1, column=0, columnspan=2, sticky='EWNS')
+    owiconLabel.grid(row=1, column=2, columnspan=3, sticky='EWNS')
+    owtempLabel.grid(row=1, column=5, columnspan=1, sticky='EWNS')
+    owfeelsLikeLabel.grid(row=1, column=6, columnspan=1, sticky='EWNS')
+    owhumidityLabel.grid(row=1, column=7, columnspan=2, sticky='EWNS')
+    # ---------------------------------------------------------------------
+
+    cdsLabel.grid(row=2, column=0, columnspan=3, sticky='EWNS')
+    tempLabel.grid(row=2, column=3, columnspan=3, sticky='EWNS')
+    humiLabel.grid(row=2, column=7, columnspan=3, sticky='EWNS')
+    receiveLabel.grid(row=3,  column=0, columnspan=9, sticky='EWNS')
 
     t1 = threading.Thread(target=receiveData)
     t1.start()
