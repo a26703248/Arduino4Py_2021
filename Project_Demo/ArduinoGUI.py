@@ -16,10 +16,12 @@ from PIL import Image, ImageTk
 COM_PORT = 'COM4'  # 指定通訊埠名稱
 BAUD_RATES = 9600  # 設定傳輸速率(鮑率)
 play = True
-
+door = ''
 def sendData(num):
     data_row = str(num) + '#'
     data = data_row.encode()
+    global door
+    door = num
     ser.write(data)
 
 def receiveData():
@@ -30,11 +32,24 @@ def receiveData():
             data = data_row.decode()  # 預設是用 UTF-8 解碼
             data = data.strip("\r").strip("\n")  # 除去換行符號
             respText.set(data)
+            # print(data)
             try:
                 values = data.split(",")
-                cdsValue.set('{} lu'.format(float(values[2])))
+                cdsValue.set('{} lu'.format(float(values[0])))
                 tempValue.set('{} C'.format(float(values[1])))
-                humiValue.set('{} %'.format(float(values[0])))
+                humiValue.set('{} %'.format(float(values[2])))
+                if(int(values[3]) == 16):
+                    sendButton0.config(image = buzeeropen)
+                    sendButton0.image = buzeeropen
+                elif(int(values[3]) == 32):
+                    sendButton0.config(image = buzeerclose)
+                    sendButton0.image = buzeerclose
+                if (int(values[4]) == 80):
+                    sendButton4.config(image = clodoor)
+                    sendButton4.image = clodoor
+                elif(int(values[4]) == 0):
+                    sendButton4.config(image = opdoor)
+                    sendButton4.image = opdoor
             except :
                 pass
         except Exception as e:
@@ -122,15 +137,14 @@ if __name__ == '__main__':#主方法
     sendButton1 = tkinter.Button(text='1', image=redlight, command=lambda: sendData('1'))
     sendButton2 = tkinter.Button(text='2', image=greenlight, command=lambda: sendData('2'))
     sendButton3 = tkinter.Button(text='3', image=yellowlight, command=lambda: sendData('3'))
-    sendButton4 = tkinter.Button(text='4', image=opdoor, command=lambda: sendData('4'))
-    sendButton8 = tkinter.Button(text='8', image=clodoor, command=lambda: sendData('8'))
+    sendButton4 = tkinter.Button(text='4', image=clodoor, command=lambda: sendData('4' if door != '4' else '8'))
 
     # 網路爬蟲--------------------------------------------------------------
     owmainButton = tkinter.Button(textvariable=owmainValue, command=lambda: getOpenWeatherData())
     owiconLabel = tkinter.Label(root, textvariable=owiconValue)
-    owtempLabel = tkinter.Label(root, textvariable=owtempValue, font = 'Arial -26', fg = 'green')
-    owfeelsLikeLabel = tkinter.Label(root, textvariable=owfeelsLikeValue, font = 'Arial -26', fg = 'green')
-    owhumidityLabel = tkinter.Label(root, textvariable=owhumidityValue, font = 'Arial -32', fg = 'blue')
+    owtempLabel = tkinter.Label(root, textvariable=owtempValue, font = 'Arial -12', fg = 'green')
+    owfeelsLikeLabel = tkinter.Label(root, textvariable=owfeelsLikeValue, font = 'Arial -12', fg = 'green')
+    owhumidityLabel = tkinter.Label(root, textvariable=owhumidityValue, font = 'Arial -12', fg = 'blue')
     # ---------------------------------------------------------------------
 
     receiveLabel = tkinter.Label(root, textvariable=respText)
@@ -145,8 +159,7 @@ if __name__ == '__main__':#主方法
     sendButton1.grid(row=0,   column=1, columnspan=1, sticky='EWNS')
     sendButton2.grid(row=0,   column=2, columnspan=1, sticky='EWNS')
     sendButton3.grid(row=0,   column=3, columnspan=1, sticky='EWNS')
-    sendButton4.grid(row=0,   column=4, columnspan=1, sticky='EWNS')
-    sendButton8.grid(row=0,   column=5, columnspan=1, sticky='EWNS')
+    sendButton4.grid(row=0,   column=4, columnspan=2, sticky='EWNS')
 
     # 網路爬蟲--------------------------------------------------------------
     owmainButton.grid(row=1, column=0, columnspan=1, sticky='EWNS')
@@ -163,5 +176,8 @@ if __name__ == '__main__':#主方法
 
     t1 = threading.Thread(target=receiveData)
     t1.start()
+
+    t2 = threading.Thread(target=getOpenWeatherData)
+    t2.start()
 
     root.mainloop()
