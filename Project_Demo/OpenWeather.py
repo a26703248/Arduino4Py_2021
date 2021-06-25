@@ -8,7 +8,7 @@ import ssl
 def openWeather():
     city = 'taoyuan'
     count = 'tw'
-    apikey = '3b657e4dc92918d9d95fff4633377535'
+    apikey = '9843047d16e20413cf8f4203c24e5d29'
     url = 'https://api.openweathermap.org/data/2.5/weather?q={},{}&appid={}' \
         .format(city, count, apikey)
 

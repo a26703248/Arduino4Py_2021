@@ -73,10 +73,10 @@ def getOpenWeatherData():
     owiconLabel.config(image=photo)
     owiconLabel.image = photo
 
-    owtempValue.set('%.1f C' % (float(temp)-273.25))
-    owfeelsLikeValue.set('%.1f C' % (float(feels_like)-273.25))
+    owtempValue.set('%.1f C' % (float(temp)-273.15))
+    owfeelsLikeValue.set('%.1f C' % (float(feels_like)-273.15))
     owhumidityValue.set('%.1f %%' % float(humidity))
-    string = 'A{:.1f},{:.1f},{:.1f}'.format((float(temp)-273.25), (float(feels_like)-273.25), humidity)
+    string = 'A{:.1f},{:.1f},{:.1f}'.format((float(temp)-273.15), (float(feels_like)-273.15), humidity)
     sendPyToAdr(string)
 
 def sendPyToAdr(string):
@@ -142,9 +142,9 @@ if __name__ == '__main__':#主方法
     # 網路爬蟲--------------------------------------------------------------
     owmainButton = tkinter.Button(textvariable=owmainValue, command=lambda: getOpenWeatherData())
     owiconLabel = tkinter.Label(root, textvariable=owiconValue)
-    owtempLabel = tkinter.Label(root, textvariable=owtempValue, font = 'Arial -12', fg = 'green')
-    owfeelsLikeLabel = tkinter.Label(root, textvariable=owfeelsLikeValue, font = 'Arial -12', fg = 'green')
-    owhumidityLabel = tkinter.Label(root, textvariable=owhumidityValue, font = 'Arial -12', fg = 'blue')
+    owtempLabel = tkinter.Label(root, textvariable=owtempValue, font = 'Arial -16', fg = 'green')
+    owfeelsLikeLabel = tkinter.Label(root, textvariable=owfeelsLikeValue, font = 'Arial -16', fg = 'green')
+    owhumidityLabel = tkinter.Label(root, textvariable=owhumidityValue, font = 'Arial -16', fg = 'blue')
     # ---------------------------------------------------------------------
 
     receiveLabel = tkinter.Label(root, textvariable=respText)

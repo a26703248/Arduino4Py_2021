@@ -31,13 +31,13 @@ for r in rows:
 print(stocks)
 
 # 匯入資料庫
-sql = '''
-        insert into Stock (證券代號,證券名稱,殖利率,股利年度,本益比,股價淨值比,財報年季,ts)
-        values(?,?,?,?,?,?,?,?)
-      '''
-conn = sqlite3.connect('twii.db')
-curses = conn.cursor()
-curses.executemany(sql, stocks)
-conn.commit()
-
-conn.close()
+# sql = '''
+#         insert into Stock (證券代號,證券名稱,殖利率,股利年度,本益比,股價淨值比,財報年季,ts)
+#         values(?,?,?,?,?,?,?,?)
+#       '''
+# conn = sqlite3.connect('twii.db')
+# curses = conn.cursor()
+# curses.executemany(sql, stocks)
+# conn.commit()
+#
+# conn.close()

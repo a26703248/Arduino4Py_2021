@@ -11,15 +11,18 @@ sql = '''
             feelslikeTemp float not null,
             humidity float not null,
             wendspeed float not null,
-            wenddeg float not null,
+            wenddeg int not null,
             clouds int not null,
             main NVARCHAR(20),
             country NVARCHAR(20) not null,
             city NVARCHAR(20) not null,
-            ts NVARCHAR(50) not null
+            ts NVARCHAR(50) not null,
+            origin NVARCHAR(20) not null
         )
       '''
-
+# sql = '''
+#         drop table WEATHER
+#       '''
 conn = sqlite3.connect('weather.db')
 curses = conn.cursor()
 curses.execute(sql)
