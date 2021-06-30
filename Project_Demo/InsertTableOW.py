@@ -1,8 +1,11 @@
 import json
 import sqlite3
+import threading
 import time
 import requests
 
+conn = sqlite3.connect('../Project_Demo/weather.db', check_same_thread=False)
+curses = conn.cursor()
 city = 'taoyuan'
 count = 'tw'
 apikey = '9843047d16e20413cf8f4203c24e5d29'
@@ -39,25 +42,21 @@ def openWeather():
         main = jo['weather'][0]['main']
         country = count
         citys = city
-        times = time.localtime(jo['sys']['sunrise'])
-        ts = '{}/{}/{},{}:{}:{}'.format(times[0], times[1], times[2], times[3], times[4], times[5])
         origin = 'openweather.Web'
-        return temp,maxTemp,minTemp,feelslikeTemp,humidity,wendspeed,wenddeg,clouds,main,country,citys,ts,origin
+        return temp,maxTemp,minTemp,feelslikeTemp,humidity,wendspeed,wenddeg,clouds,main,country,citys,origin
     else:
         print('ERROR', resp.status_code)
-        return None,None,None,None,None,None,None,None,None,None,None,None,None
-
-if __name__ == '__main__':
-    list = openWeather()
-    print(list)
+        return None,None,None,None,None,None,None,None,None,None,None,None
+def InsertDB(list):
     sql = '''
-            insert into WEATHER(temp,maxTemp,minTemp,feelslikeTemp,humidity,wendspeed,wenddeg,clouds,main,country,city,ts,origin)
-            Values(?,?,?,?,?,?,?,?,?,?,?,?,?)
-          '''
-    conn = sqlite3.connect('weather.db')
-    curses = conn.cursor()
-
+                insert into openweather(temp,maxTemp,minTemp,feelslikeTemp,humidity,wendspeed,wenddeg,clouds,main,country,city,origin)
+                Values(?,?,?,?,?,?,?,?,?,?,?,?)
+              '''
     curses.execute(sql, list)
     conn.commit()
+
     print('完成')
     conn.close()
+if __name__ == '__main__':
+    list = openWeather()
+    InsertDB(list)

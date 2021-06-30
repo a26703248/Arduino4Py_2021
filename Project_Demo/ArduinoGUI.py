@@ -4,19 +4,22 @@
 | 766,20.50,52.00 |
 +-----------------+
 '''
-
+import sqlite3
 import tkinter
 import serial
 import threading
 import Project_Demo.OpenWeather as pd
 from io import BytesIO
 from PIL import Image, ImageTk
-
+import time
+import DrawChart_GUI as gui
 
 COM_PORT = 'COM4'  # 指定通訊埠名稱
 BAUD_RATES = 9600  # 設定傳輸速率(鮑率)
 play = True
 door = ''
+conn = sqlite3.connect('weather.db', check_same_thread=False)
+
 def sendData(num):
     data_row = str(num) + '#'
     data = data_row.encode()
@@ -84,8 +87,26 @@ def sendPyToAdr(string):
     data = data_row.encode()
     ser.write(data)
 
-if __name__ == '__main__':#主方法
+def sendlocalweather():
+    sql = "Insert into LocalWeather(cds, temp, humi) values(%.1f, %.1f, %.1f)" % \
+          (float(cdsValue.get().split(" ")[0]),
+           float(tempValue.get().split(" ")[0]),
+           float(humiValue.get().split(" ")[0]))
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    print('last insert record id :', cursor.lastrowid)
+    conn.commit()
+    pass
 
+def excuDB():
+    while play:
+        time.sleep(10)
+        sendlocalweather()
+
+def guiShow():
+    gui.show()
+
+if __name__ == '__main__':#主方法
     try:
         ser = serial.Serial(COM_PORT, BAUD_RATES)
     except Exception as e:
@@ -179,5 +200,11 @@ if __name__ == '__main__':#主方法
 
     t2 = threading.Thread(target=getOpenWeatherData)
     t2.start()
+
+    t3 = threading.Thread(target=excuDB)
+    t3.start()
+
+    t4 = threading.Thread(target=guiShow)
+    t4.start()
 
     root.mainloop()
