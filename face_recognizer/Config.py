@@ -3,6 +3,9 @@ import cv2
 # 訓練對象人名(請輸入自己的名字) ?
 MY_NAME = 'Howard'
 
+# 樣本素材張數
+SAMP_AMOUNT = 200
+
 # 定義均值圖檔檔名
 MEAN_FILE = './training/mean.png'
 
@@ -15,10 +18,10 @@ NEGATIVE_EIGENFACE_FILE = './training/negative_eigenface.png'
 # 定義正樣本檔案檔名的前置詞為 positive_
 POSITIVE_FILE_PREFIX = 'positive_'
 
-# 辨識特徵數
+# 辨識特徵數(臉部特徵數為80)
 COMPONENT_NUMBER = 80
 
-# 辨識信心水準
+# 辨識信心水準(越小要求越高，盡量不要小於1500)
 POSITIVE_THRESHOLD = 2000.0
 
 # 特定人臉辨識訓練集檔名

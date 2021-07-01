@@ -79,6 +79,8 @@ if __name__ == '__main__':
             # CASCADE_DO_ROUGH_SEARCH=8 粗略的檢測
         )
 
+        # 印出辨識信心度
+        cv2.putText(frame, str(int(label[1])), (10, 30), 2, 1.2, (255, 0, 0), 2)
 
         # 7.判斷評估值 <= Config.POSITIVE_THRESHOLD
         if label[1] <= Config.POSITIVE_THRESHOLD:
@@ -99,7 +101,7 @@ if __name__ == '__main__':
             print('辨識失敗 face_recognizer!')
             # 在臉部周圍畫矩形框
             for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 5)  # 注意：(0, 255, 0) 是 BGR
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 5)  # 注意：(0, 255, 0) 是 BGR
 
         # 結束辨識程序...end
 
