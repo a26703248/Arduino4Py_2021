@@ -7,8 +7,9 @@
 import shutil
 import sqlite3
 import tkinter
-
-import cv2
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 import serial
 import threading
 import Project_Demo.OpenWeather as pd
@@ -18,11 +19,19 @@ import time
 import DrawChart_GUI as gui
 import face_recognizer_lab1.Face_recognition as recog
 
-COM_PORT = 'COM4'  # 指定通訊埠名稱
+COM_PORT = 'COM5'  # 指定通訊埠名稱
 BAUD_RATES = 9600  # 設定傳輸速率(鮑率)
 play = True
 door = ''
+buzeer_on = 16
+buzeer_off = 32
+door_open = 80
+door_close = 0
 conn = sqlite3.connect('weather.db', check_same_thread=False)
+cred = credentials.Certificate('../firebase/key.json')
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://arduino-iot-20210701-default-rtdb.firebaseio.com/'
+})
 
 def sendData(num):
     data_row = str(num) + '#'
@@ -31,15 +40,44 @@ def sendData(num):
     door = num
     ser.write(data)
 
+def postToFirebase(data):
+    #------------------------------------------------
+    #firebase set log
+    db.reference('/log/data').set(data)
+    db.reference('/log/time/str').set(time.ctime())
+    db.reference('/log/time/long').set(time.time())
+    # ------------------------------------------------
+    # firebase set 結構資料配置
+    # 752,24.80,42.00,0,20
+    logArray = data.split(",")
+    db.reference('/cds').set(int(logArray[0]))
+    db.reference('/dht11/temp').set(float(logArray[1]))
+    db.reference('/dht11/humi').set(float(logArray[2]))
+    db.reference('/led').set(int(logArray[3]))
+
+    if int(logArray[3]) == buzeer_off:
+       db.reference('/buzeer').set(0)
+    elif int(logArray[3]) == buzeer_on:
+       db.reference('/buzeer').set(1)
+
+    if int(logArray[4]) == door_close:
+       db.reference('/door').set(0)
+    elif int(logArray[4]) == door_open:
+       db.reference('/door').set(1)
+
 def receiveData():
     while play:
         try:
             global ser
             data_row = ser.readline()  # 讀取一行(含換行符號\r\n)原始資料
             data = data_row.decode()  # 預設是用 UTF-8 解碼
-            data = data.strip("\r").strip("\n")  # 除去換行符號
+            data = data.strip("\n")  # 除去換行符號
+            data = data.strip("\r")
             # print(data)
+            threading.Thread(target=lambda: postToFirebase(data)).start()
             respText.set(data)
+            #回傳 Log 至雲端資料庫
+            db.reference('/log').set(data)
             try:
                 values = data.split(",")
                 cdsValue.set('{} lu'.format(float(values[0])))
