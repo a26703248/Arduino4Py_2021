@@ -5,7 +5,7 @@ cap = cv2.VideoCapture(0)
 
 # 設定捕捉區域
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1024) # 800, 640
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 76) # 600, 480
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 768) # 600, 480
 
 while True:
     # 捕捉 frame-by-frame
