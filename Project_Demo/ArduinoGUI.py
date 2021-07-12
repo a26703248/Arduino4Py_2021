@@ -25,8 +25,9 @@ play = True
 door = ''
 buzeer_on = 16
 buzeer_off = 32
-door_open = 80
-door_close = 0
+door_open = 0
+door_close = 80
+
 conn = sqlite3.connect('weather.db', check_same_thread=False)
 cred = credentials.Certificate('../firebase/key.json')
 firebase_admin.initialize_app(cred, {
@@ -68,16 +69,17 @@ def postToFirebase(data):
 def receiveData():
     while play:
         try:
+
             global ser
             data_row = ser.readline()  # 讀取一行(含換行符號\r\n)原始資料
             data = data_row.decode()  # 預設是用 UTF-8 解碼
             data = data.strip("\n")  # 除去換行符號
             data = data.strip("\r")
-            # print(data)
+            #print(data)
             threading.Thread(target=lambda: postToFirebase(data)).start()
             respText.set(data)
-            #回傳 Log 至雲端資料庫
-            db.reference('/log').set(data)
+            # 回傳 Log 至雲端資料庫
+            # db.reference('/log').set(data)
             try:
                 values = data.split(",")
                 cdsValue.set('{} lu'.format(float(values[0])))
@@ -89,10 +91,10 @@ def receiveData():
                 elif(int(values[3]) == 32):
                     sendButton0.config(image = buzeerclose)
                     sendButton0.image = buzeerclose
-                if (int(values[4]) == 80):
+                if (int(values[4]) == door_close):
                     sendButton4.config(image = clodoor)
                     sendButton4.image = clodoor
-                elif(int(values[4]) == 0):
+                elif(int(values[4]) == door_open):
                     sendButton4.config(image = opdoor)
                     sendButton4.image = opdoor
             except :
@@ -102,6 +104,21 @@ def receiveData():
                 ser = serial.Serial(COM_PORT, BAUD_RATES)
             except Exception as e:
                 print("Serial closed ...")
+
+def cv():
+    score = recog.recognizer()
+    print("score: ", score)
+    if score <= 2000:
+        sendData('8')
+
+def faceListsner(event):
+    if (event.data == 1):
+        db.reference("/face").set(0)
+        cv()
+
+def execFaceListsner():
+    # 監聽 firebase face 資料
+    db.reference("/face").listen(faceListsner)
 
 def getOpenWeatherData():
     status_code, main, icon, temp, feels_like, humidity = pd.openWeather()
@@ -203,8 +220,8 @@ if __name__ == '__main__':#主方法
     respText.set("0,0.0,0.0")
 
     sendButton0 = tkinter.Button(text='16', image=buzeerclose, command=lambda: sendData('16'))
-    sendButton1 = tkinter.Button(text='1', image=redlight, command=lambda: sendData('1'))
-    sendButton2 = tkinter.Button(text='2', image=greenlight, command=lambda: sendData('2'))
+    sendButton1 = tkinter.Button(text='1', image=redlight, command=lambda: sendData('2'))
+    sendButton2 = tkinter.Button(text='2', image=greenlight, command=lambda: sendData('1'))
     sendButton3 = tkinter.Button(text='3', image=yellowlight, command=lambda: sendData('3'))
     sendButton4 = tkinter.Button(text='4', image=clodoor, command=lambda: sendData('4' if door != '4' else '8'))
     sendButton5 = tkinter.Button(text='臉部辨識', image=face, command=lambda: faceIDrecogn())
@@ -255,5 +272,8 @@ if __name__ == '__main__':#主方法
 
     t4 = threading.Thread(target=guiShow)
     t4.start()
+
+    t5 = threading.Thread(target=execFaceListsner)
+    t5.start()
 
     root.mainloop()

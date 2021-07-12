@@ -20,8 +20,8 @@ for r in rows:
     list = r.split(',')
     if len(list) == 8 and list[0] != '證券代號':
         #print(list)
-        list[2] = float(list[2]) # 殖利率(%)
-        list[3] = int(list[3]) # 股利年度
+        list[2] = float(list[2])  # 殖利率(%)
+        list[3] = int(list[3])    # 股利年度
         list[4] = float(list[4])  # 本益比
         list[5] = float(list[5])  # 股價淨值比
         list[5] = float(list[5])  # 股價淨值比

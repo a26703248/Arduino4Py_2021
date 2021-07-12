@@ -10,7 +10,7 @@ import threading
 from tkinter import font
 from PIL import Image, ImageTk
 
-COM_PORT = 'COM4'  # 指定通訊埠名稱
+COM_PORT = 'COM5'  # 指定通訊埠名稱
 BAUD_RATES = 9600  # 設定傳輸速率(鮑率)
 play = True
 def sendData(num):
